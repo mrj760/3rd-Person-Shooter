@@ -36,4 +36,17 @@ public class PlayerStats
         aimDecelX = 1;
         aimDecelY = 1;
     }
+
+    public void SetMoveSpeed(float val)
+    {
+        moveSpeedX = val;
+        moveSpeedY = val;
+        moveSpeedZ = val;
+    }
+
+    public void SetAimSpeed(float val)
+    {
+        aimSpeedX = val;
+        aimSpeedY = val;
+    }
 }

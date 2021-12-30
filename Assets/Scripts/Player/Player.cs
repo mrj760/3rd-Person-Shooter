@@ -11,6 +11,12 @@ public class Player : MonoBehaviour
     public Transform fwdtx;
     PlayerStats ps;
 
+    public GameObject projectile;
+    public float projectileTime = 5f;
+
+    public float moveSpeed = 3f;
+    public float camSpeed = 2f;
+
     float dt;
     float gravity = -9.8f;
     float gravityFactor = 1.0f;
@@ -18,15 +24,22 @@ public class Player : MonoBehaviour
     float rh;
     float rv;
     public float camDistance = 1.2f;
+    [Range(-180, 0)]
     float lookDownAngle = -70f;
+    [Range(0,180)]
     float lookUpAngle = 30f;
     float x = 0, y = 0, z = 0;
     float radAroundY = 0;
     float radAroundX = 0;
 
+    List<GameObject> projectiles;
+
     void Start()
     {
         ps = new PlayerStats();
+        ps.SetMoveSpeed(moveSpeed);
+        ps.SetAimSpeed(camSpeed);
+        projectiles = new List<GameObject>();
     }
 
     void Update()
@@ -96,9 +109,9 @@ public class Player : MonoBehaviour
         }
 
         radAroundY = (radAroundY + (ps.aimX * dt)) % (Mathf.PI*2);
-        Debug.Log($"rv:{rv}");
-        Debug.Log($"Radians Around Y: {radAroundY}... Radians Around X: {radAroundX}");
-        Debug.Log($"Degrees Around Y: {radAroundY * Mathf.Rad2Deg}... Degrees Around X: {radAroundX * Mathf.Rad2Deg}");
+        // Debug.Log($"rv:{rv}");
+        // Debug.Log($"Radians Around Y: {radAroundY}... Radians Around X: {radAroundX}");
+        // Debug.Log($"Degrees Around Y: {radAroundY * Mathf.Rad2Deg}... Degrees Around X: {radAroundX * Mathf.Rad2Deg}");
 
         x = (camDistance * Mathf.Sin(radAroundY));
         y = (camDistance * Mathf.Sin(radAroundX));
@@ -162,13 +175,26 @@ public class Player : MonoBehaviour
             transform.Translate(new Vector3(ps.moveX * dt, 0, ps.moveZ * dt));
         }
 
-        // float L2 = Input.GetAxis("L2");
-        // float R2 = Input.GetAxis("R2");
+        float L2 = Input.GetAxis("L2");
+        float R2 = Input.GetAxis("R2");
+
+        if (R2 > 0)
+        {
+            GameObject ho = (Instantiate(projectile, transform.position, transform.rotation));
+            projectiles.Add(ho);
+            StartCoroutine(EndProjectile(ho));
+        }
+        foreach (var p in projectiles)
+        {
+            p.transform.position += (fwdtx.position - transform.position) * dt * 10f;
+        }
+
+
 
         // Debug.Log($"Movement ({ps.moveX}, {ps.moveZ})");
         // Debug.Log($"Aim ({ps.aimX}, {ps.aimY})");
-        // Debug.Log($"R2 ({R2})");
-        // Debug.Log($"L2 ({L2})");
+        Debug.Log($"R2 ({R2})");
+        Debug.Log($"L2 ({L2})");
     }
 
     
@@ -183,5 +209,12 @@ public class Player : MonoBehaviour
         Gizmos.color = Color.green;
         Vector3 angle = Vector3.zero;
         Gizmos.DrawLine(transform.position, fwdtx.forward);
+    }
+
+    IEnumerator EndProjectile (GameObject proj)
+    {
+        yield return new WaitForSeconds(5f);
+        projectiles.Remove(proj);
+        Destroy(proj);
     }
 }

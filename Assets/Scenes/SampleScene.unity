@@ -155,6 +155,10 @@ MonoBehaviour:
   camtx: {fileID: 1181154954}
   cam: {fileID: 963194227}
   fwdtx: {fileID: 1288495228}
+  projectile: {fileID: 3362810100584449491, guid: 8b3602e7d27a5fc48bedc91b41db06a8, type: 3}
+  projectileTime: 5
+  moveSpeed: 3
+  camSpeed: 2
   camDistance: 1.2
 --- !u!4 &240925497
 Transform:
