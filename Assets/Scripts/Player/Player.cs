@@ -74,8 +74,8 @@ public class Player : MonoBehaviour
                 ps.aimY += ps.aimDecelY;
         }
         // Moving camera
-        // aimX is num degrees to rotate around y axis
-        // aimY is num degrees to rotate around x axis
+        // aimX is num rads to rotate around y axis
+        // aimY is num rads to rotate around x axis
         if (radAroundX <= (lookDownAngle * Mathf.Deg2Rad))
         {
             if (rv > 0)
