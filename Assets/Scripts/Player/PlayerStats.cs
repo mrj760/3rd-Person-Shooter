@@ -18,23 +18,23 @@ public class PlayerStats
         moveX = 0;
         moveY = 0;
         moveZ = 0;
-        moveSpeedX = 1;
+        moveSpeedX = 3;
         moveSpeedY = 1;
-        moveSpeedZ = 1;
-        moveAccelX = 1;
+        moveSpeedZ = 3;
+        moveAccelX = 50;
         moveAccelY = 1;
-        moveAccelZ = 1;
-        moveDecelX = 1;
+        moveAccelZ = 50;
+        moveDecelX = 50;
         moveDecelY = 1;
-        moveDecelZ = 1;
+        moveDecelZ = 50;
         aimX = 0;
         aimY = 0;
-        aimSpeedX = 1;
-        aimSpeedY = 1;
-        aimAccelX = 1;
-        aimAccelY = 1;
-        aimDecelX = 1;
-        aimDecelY = 1;
+        aimSpeedX = 2;
+        aimSpeedY = 2;
+        aimAccelX = 3;
+        aimAccelY = 3;
+        aimDecelX = 3;
+        aimDecelY = 3;
     }
 
     public void SetMoveSpeed(float val)
@@ -48,5 +48,11 @@ public class PlayerStats
     {
         aimSpeedX = val;
         aimSpeedY = val;
+    }
+
+    public void SetMoveAccelXZ(float val)
+    {
+        moveAccelX = val;
+        moveAccelZ = val;
     }
 }
