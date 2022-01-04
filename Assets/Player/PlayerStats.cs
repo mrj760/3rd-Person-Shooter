@@ -1,3 +1,8 @@
+using UnityEngine;
+using System.Collections.Generic;
+using System;
+
+[Serializable]
 public class PlayerStats
 {
     public float hp;
@@ -21,15 +26,15 @@ public class PlayerStats
         moveSpeedX = 3;
         moveSpeedY = 1;
         moveSpeedZ = 3;
-        moveAccelX = 50;
+        moveAccelX = 20;
         moveAccelY = 1;
-        moveAccelZ = 50;
-        moveDecelX = 50;
+        moveAccelZ = 20;
+        moveDecelX = 10;
         moveDecelY = 1;
-        moveDecelZ = 50;
+        moveDecelZ = 10;
         aimX = 0;
         aimY = 0;
-        aimSpeedX = 2;
+        aimSpeedX = 4;
         aimSpeedY = 2;
         aimAccelX = 3;
         aimAccelY = 3;

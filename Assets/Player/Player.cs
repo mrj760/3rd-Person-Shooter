@@ -12,7 +12,7 @@ public class Player : MonoBehaviour
     public Vector3 camOffset;
     public Vector3 camAngleOffset;
     public Transform fwdtx;
-    PlayerStats ps;
+    public PlayerStats ps;
     public GameObject projectile;
     public float projectileTime = 5f;
     Vector3 projectileTarget;
@@ -71,7 +71,7 @@ public class Player : MonoBehaviour
         }
         else
         {
-            if (Mathf.Abs(ps.aimX) < .05f || ps.aimX / rh < 0.0f)
+            if (Mathf.Abs(ps.aimX) < .05f || ps.aimX * rh < 0.0f) // if almost stopped or switching aim direction
                 ps.aimX = 0;
             else if (ps.aimX > 0)
                 ps.aimX -= ps.aimDecelX * dt;
@@ -89,7 +89,7 @@ public class Player : MonoBehaviour
         }
         else
         {
-            if (Mathf.Abs(ps.aimY) < .05f || ps.aimY / rv < 0.0f)
+            if (Mathf.Abs(ps.aimY) < .05f || ps.aimY * rv < 0.0f) // if almost stopped or switching aim direction
                 ps.aimY = 0;
             else if (ps.aimY > 0)
                 ps.aimY -= ps.aimDecelY * dt;
@@ -137,11 +137,11 @@ public class Player : MonoBehaviour
         //Debug.Log($"X:{x}, Y:{y}, Z:{z}");
 
         // move camera
-        camtx.position = transform.position - new Vector3(x, y, z);
+        camtx.localPosition = - new Vector3(x, y, z);
         camtx.LookAt(transform.position);
         camtx.Rotate(camAngleOffset, Space.World);
         // track forward vector on opposite side of camera
-        fwdtx.position = transform.position + new Vector3(x, y, z).normalized;
+        fwdtx.localPosition =  new Vector3(x, y, z).normalized;
         fwdtx.RotateAround(transform.position, Vector3.up, camAngleOffset.y);
         fwdtx.LookAt(transform.position);
         fwdtx.Rotate(0,180,0);
@@ -176,7 +176,7 @@ public class Player : MonoBehaviour
         }
         else
         {
-            if (Mathf.Abs(ps.moveX) < .1f)
+            if (Mathf.Abs(ps.moveX) < .1f || ps.moveX * lh < 0.0f) // if almost stopped or switching move direction
                 ps.moveX = 0;
             else
                 if (ps.moveX < 0)
@@ -195,7 +195,7 @@ public class Player : MonoBehaviour
         }
         else
         {
-            if (Mathf.Abs(ps.moveZ) < .1f)
+            if (Mathf.Abs(ps.moveZ) < .1f || ps.moveZ * lv < 0.0f) // if almost stopped or switching move direction
                 ps.moveZ = 0;
             else
                 if (ps.moveZ < 0)
