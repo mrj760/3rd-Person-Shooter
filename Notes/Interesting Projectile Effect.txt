@@ -1,0 +1,14 @@
+// Projectile heads away from player when it catches up to the cam.forward. 
+// Otherwise if a player is turning, they bring the cam.forward away from the projectile and the projectile chases after it.
+
+// Vector3 playerToProjectile = p.transform.position - transform.position;
+// Vector3 projectileToCamFwd = Vector3.Project(p.transform.position - transform.position, cam.transform.forward);
+// float distToCamFwd = Vector3.Distance(p.transform.position, transform.position + projectileToCamFwd);
+// Vector3 candidateTarget = (Mathf.Max(1f/distToCamFwd, .01f) * cam.transform.forward) + transform.position;
+// if (Vector3.Distance(transform.position, candidateTarget) < Vector3.Distance(transform.position, projectileTarget))
+// {
+//     Vector3.RotateTowards(candidateTarget, transform.position + cam.transform.forward*Mathf.Infinity, Mathf.PI, 1);
+// }
+// projectileTarget = candidateTarget;
+// Debug.Log($"Dist to normal: {distToCamFwd}, Target = {projectileTarget}, n: {1f/distToCamFwd}");
+// p.transform.LookAt(projectileTarget);

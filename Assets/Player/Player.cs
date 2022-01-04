@@ -8,22 +8,24 @@ public class Player : MonoBehaviour
     public GameObject move;
     public Transform camtx;
     public Camera cam;
+    public float camDistance = 1.2f;
     public Vector3 camOffset;
+    public Vector3 camAngleOffset;
     public Transform fwdtx;
     PlayerStats ps;
     public GameObject projectile;
     public float projectileTime = 5f;
+    Vector3 projectileTarget;
     float dt;
     float gravity = -9.8f;
     float gravityFactor = 1.0f;
     float maxFallSpeed = -20.0f;
     float rh;
     float rv;
-    public float camDistance = 1.2f;
     [Range(-180, 0)]
-    float lookDownMaxAngle = -70f;
+    public float lookDownMaxAngle = -70f;
     [Range(0,180)]
-    float lookUpMaxAngle = 30f;
+    public float lookUpMaxAngle = 30f;
     float x = 0, y = 0, z = 0;
     float radAroundY = 0;
     float radAroundX = 0;
@@ -43,7 +45,8 @@ public class Player : MonoBehaviour
     {
         dt = Time.deltaTime;
 
-        /* Moving Camera around player */
+        /* BEGIN Moving Camera around player */
+
         // Input to move camera right & left, and limiting speed
         rh = Input.GetAxis("Horizontal Aim");
         rv = Input.GetAxis("Vertical Aim");
@@ -128,16 +131,18 @@ public class Player : MonoBehaviour
         //Debug.Log($"Radians Around Y: {radAroundY}... Radians Around X: {radAroundX}");
         //Debug.Log($"Degrees Around Y: {radAroundY * Mathf.Rad2Deg}... Degrees Around X: {radAroundX * Mathf.Rad2Deg}");
         {
-        x = (camDistance * Mathf.Sin(radAroundY));
-        y = (camDistance * Mathf.Sin(radAroundX));
-        z = (camDistance * Mathf.Cos(radAroundY));
+        x = ((camDistance + camOffset.x) * Mathf.Sin(radAroundY));
+        y = ((camDistance + camOffset.y) * Mathf.Sin(radAroundX));
+        z = ((camDistance + camOffset.z) * Mathf.Cos(radAroundY));
         //Debug.Log($"X:{x}, Y:{y}, Z:{z}");
 
         // move camera
-        camtx.position = transform.position - new Vector3(x, y, z) + camOffset;
+        camtx.position = transform.position - new Vector3(x, y, z);
         camtx.LookAt(transform.position);
+        camtx.Rotate(camAngleOffset, Space.World);
         // track forward vector on opposite side of camera
-        fwdtx.position = transform.position + new Vector3(x, transform.position.y, z);
+        fwdtx.position = transform.position + new Vector3(x, y, z).normalized;
+        fwdtx.RotateAround(transform.position, Vector3.up, camAngleOffset.y);
         fwdtx.LookAt(transform.position);
         fwdtx.Rotate(0,180,0);
         }
@@ -240,14 +245,22 @@ public class Player : MonoBehaviour
             }
             if (p.GetType() == typeof(BasicShot))
             {
-                Vector3 playerToProjectile = p.transform.position - transform.position;
-                Vector3 projectileToCamFwd = Vector3.Project(p.transform.position - transform.position, cam.transform.forward);
-                float distToCamFwd = Vector3.Distance(p.transform.position, transform.position + projectileToCamFwd);
-                Vector3 target = (Mathf.Max(1f/distToCamFwd, .01f) * cam.transform.forward) + transform.position;
-                Debug.Log($"Dist to normal: {distToCamFwd}, Target = {target}, n: {1f/distToCamFwd}");
-                p.transform.LookAt(target);
+
+                // Vector3 playerToProjectile = p.transform.position - transform.position;
+                // Vector3 projectileToCamFwd = Vector3.Project(p.transform.position - transform.position, cam.transform.forward);
+                // float distToCamFwd = Vector3.Distance(p.transform.position, transform.position + projectileToCamFwd);
+                // float distFromPlayerToAim = Mathf.Max(1f/distToCamFwd, .01f);
+                // Vector3 candidateTarget = (distFromPlayerToAim * cam.transform.forward) + transform.position;
+                // // Debug.Log($"Dist to normal: {distToCamFwd}, Target = {projectileTarget}, n: {1f/distToCamFwd}");
+                // p.transform.LookAt(candidateTarget);
+                // if (Vector3.Distance(candidateTarget, transform.position) < Vector3.Distance(projectileTarget, transform.position))
+                // {   
+                //     transform.Rotate(0,180,0);
+                // }
+                projectileTarget = transform.position + cam.transform.forward * 300f;
+                p.transform.LookAt(projectileTarget);
             }
-            Debug.Log($"Proj dir: {p.travelDir}, Speed: {p.travelSpeed}");
+            // Debug.Log($"Proj dir: {p.travelDir}, Speed: {p.travelSpeed}");
         }
         foreach (var rem in toRemove.ToArray())
         {
