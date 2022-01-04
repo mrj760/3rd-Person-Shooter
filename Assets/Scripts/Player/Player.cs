@@ -3,26 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 using Unity;
 
-class Projectile
-{
-    public GameObject projectile;
-    public Vector3 travelDir;
-
-    public Projectile(GameObject projectile, Vector3 travelDir)
-    {
-        this.projectile = projectile;
-        this.travelDir = travelDir;
-    }
-}
-
 public class Player : MonoBehaviour
 {
     public GameObject move;
     public Transform camtx;
     public Camera cam;
+    public Vector3 camOffset;
     public Transform fwdtx;
     PlayerStats ps;
-
     public GameObject projectile;
     public float projectileTime = 5f;
     float dt;
@@ -40,7 +28,10 @@ public class Player : MonoBehaviour
     float radAroundY = 0;
     float radAroundX = 0;
 
+    Vector3 moveDir;
+
     List<Projectile> projectiles;
+    float projCoolDown = 0f;
 
     void Start()
     {
@@ -54,8 +45,8 @@ public class Player : MonoBehaviour
 
         /* Moving Camera around player */
         // Input to move camera right & left, and limiting speed
-        rh = 10 * Input.GetAxis("Horizontal Aim");
-        rv = 10 * Input.GetAxis("Vertical Aim");
+        rh = Input.GetAxis("Horizontal Aim");
+        rv = Input.GetAxis("Vertical Aim");
 
         Vector2 aimInp = new Vector2(rh, rv);
 
@@ -143,7 +134,7 @@ public class Player : MonoBehaviour
         //Debug.Log($"X:{x}, Y:{y}, Z:{z}");
 
         // move camera
-        camtx.position = transform.position - new Vector3(x, y, z);
+        camtx.position = transform.position - new Vector3(x, y, z) + camOffset;
         camtx.LookAt(transform.position);
         // track forward vector on opposite side of camera
         fwdtx.position = transform.position + new Vector3(x, transform.position.y, z);
@@ -169,11 +160,6 @@ public class Player : MonoBehaviour
             float moveInpMag = Mathf.Sqrt(moveInpMagSq);
             moveInp.x /= moveInpMag;
             moveInp.y /= moveInpMag;
-            Debug.Log("Normalizing Input");
-        }
-        if (moveInp != Vector2.zero)
-        {
-            Debug.Log($"Move Input: {moveInp}");
         }
         if (Mathf.Abs(lh) >= .1f)
         {
@@ -216,71 +202,11 @@ public class Player : MonoBehaviour
         // Move and face character based on camera 
         if (moving)
         {   
-            // Attempt #1
-            // Vector3 v1 = transform.forward * new Vector3(ps.moveX, 0, ps.moveZ).magnitude; // currently pointing toward
-            // Vector3 v2 = fwdtx.position - transform.position;  // desired cam-relative forward direction
-            // float c = (Vector3.Dot(v1, v2));
-            // float a = v1.magnitude;
-            // float theta = 0;
-            // if (c < 0)
-            // {
-            //     theta = Mathf.Acos(Mathf.Abs(c) * Mathf.Rad2Deg / v1.magnitude);
-            //     theta = 360 - theta;
-            // }
-            // else if (c > 0)
-            // {
-            //     theta = Mathf.Acos(c) * Mathf.Rad2Deg / v1.magnitude;
-            // }
-
-
-            
-            // // transform.RotateAround(transform.position, Vector3.up, theta);
-            // Vector3 fwd = fwdtx.position - transform.position;
-            // Vector3 right = Vector3.Cross(fwd, transform.up);
-            // Vector3 moveDir = (fwd * ps.moveZ - right * ps.moveX);
-            // transform.localEulerAngles = new Vector3(0, theta, 0);
-            // move.transform.Translate(moveDir * dt, Space.World);
-
-
-            // attempt #2
-            // Vector3 moveDirFwd = fwdtx.position - move.transform.position;
-            // Vector3 moveDirRight = Vector3.Cross(transform.up, moveDirFwd);
-            // moveDirFwd.x *= -ps.moveX;
-            // moveDirFwd.y = 0;
-            // moveDirFwd.z *= ps.moveZ;
-
-            // moveDirRight.x *= -ps.moveX;
-            // moveDirRight.y = 0;
-            // moveDirFwd.z *= ps.moveZ;
-
-            // Vector3 moveTotal = (moveDirFwd + moveDirRight).normalized;
-
-            // move.transform.Translate(moveTotal * dt);
-            // transform.LookAt(moveDirFwd);
-
-
             // attempt #3
-            var moveDir = fwdtx.right * ps.moveX + fwdtx.forward * ps.moveZ;
+            moveDir = fwdtx.right * ps.moveX + fwdtx.forward * ps.moveZ;
             moveDir.y = 0;
-            float angle = Vector3.Angle(moveDir, transform.forward);
-            // transform.Rotate(0,angle,0);
             transform.LookAt(move.transform.position + moveDir);
             move.transform.Translate(moveDir * dt);
-
-
-            // attempt #4
-            // var moveDir = transform.InverseTransformDirection(fwdtx.position - move.transform.position);
-            // moveDir.z *= ps.moveZ;
-            // moveDir.x *= ps.moveX;
-            // move.transform.Translate(moveDir * dt);
-            // transform.LookAt(transform.position + moveDir);
-
-            if (moveDir != Vector3.zero)
-            {
-                Debug.Log($"PS.Move: {ps.moveX}, {ps.moveY}, {ps.moveZ}");
-                Debug.Log($"MoveDir: {moveDir}");
-                Debug.Log($"Move Magnitude: {moveDir.magnitude}");
-            }
         }
 
         // Falling
@@ -289,20 +215,43 @@ public class Player : MonoBehaviour
         ps.moveY = Mathf.Clamp(ps.moveY, 0.0f, maxFallSpeed);
 
         float L2 = Input.GetAxis("L2");
-
-        // Send projectiles
         float R2 = Input.GetAxis("R2");
-        if (R2 > 0.1f)
-        {
-            Projectile proj = (new Projectile(projectile, fwdtx.position - transform.position));
-            projectiles.Add(proj);
-            int idx = projectiles.IndexOf(proj);
-            Instantiate(projectiles[idx].projectile, fwdtx.position, fwdtx.rotation);
-            StartCoroutine(EndProjectile(proj));
+
+        // Debug.Log($"Trigger input: {L2}, {R2}");
+
+        if (projCoolDown >= 1f && R2 > 0.1f)
+        {   
+            GameObject proj = Instantiate(projectile, fwdtx.position, cam.transform.rotation);
+            projectiles.Add(proj.GetComponent<Projectile>());
+            projCoolDown = 0f;
         }
-        foreach (var p in projectiles)
+        else
         {
-            p.projectile.transform.position += p.travelDir * dt * 10f;
+            projCoolDown += dt;
+        }
+
+        Queue<Projectile> toRemove = new Queue<Projectile>();
+        foreach (var p in projectiles)
+        {   
+            if (p == null)
+            {
+                toRemove.Enqueue(p);
+                continue;
+            }
+            if (p.GetType() == typeof(BasicShot))
+            {
+                Vector3 playerToProjectile = p.transform.position - transform.position;
+                Vector3 projectileToCamFwd = Vector3.Project(p.transform.position - transform.position, cam.transform.forward);
+                float distToCamFwd = Vector3.Distance(p.transform.position, transform.position + projectileToCamFwd);
+                Vector3 target = (Mathf.Max(1f/distToCamFwd, .01f) * cam.transform.forward) + transform.position;
+                Debug.Log($"Dist to normal: {distToCamFwd}, Target = {target}, n: {1f/distToCamFwd}");
+                p.transform.LookAt(target);
+            }
+            Debug.Log($"Proj dir: {p.travelDir}, Speed: {p.travelSpeed}");
+        }
+        foreach (var rem in toRemove.ToArray())
+        {
+            projectiles.Remove(toRemove.Dequeue());
         }
 
         //Debug.Log($"Movement ({ps.moveX}, {ps.moveZ})");
@@ -332,8 +281,7 @@ public class Player : MonoBehaviour
 
     IEnumerator EndProjectile (Projectile proj)
     {
-        yield return new WaitForSeconds(5f);
+        yield return new WaitForSeconds(1f);
         projectiles.Remove(proj);
-        Destroy(proj.projectile);
     }
 }
