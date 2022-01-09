@@ -5053,5 +5053,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   travelDir: {x: 0, y: 0, z: 1}
-  travelSpeed: 30
+  travelSpeed: 50
   lifeTime: 3

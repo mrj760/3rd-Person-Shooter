@@ -138,9 +138,12 @@ public class Player : MonoBehaviour
         //Debug.Log($"X:{x}, Y:{y}, Z:{z}");
 
         // move camera
-        cam.transform.localPosition = - new Vector3(x, y, z);
-        cam.transform.LookAt(transform.position + camLookAtOffset);
-        cam.transform.Rotate(camAngleOffset, Space.World);
+        cam.transform.position = camtx.position - new Vector3(x, y, z);
+        cam.transform.LookAt(transform.position + transform.InverseTransformDirection(camLookAtOffset));
+        // cam.transform.RotateAround(camtx.position, Vector3.right,   camAngleOffset.x);
+        // cam.transform.RotateAround(camtx.position, Vector3.up,      camAngleOffset.y);
+        // cam.transform.RotateAround(camtx.position, Vector3.forward, camAngleOffset.z);
+        cam.transform.Rotate(camAngleOffset);
         // track forward vector on opposite side of camera
         fwdtx.localPosition =  new Vector3(x, y, z).normalized;
         fwdtx.RotateAround(transform.position, Vector3.up, camAngleOffset.y);
@@ -258,7 +261,7 @@ public class Player : MonoBehaviour
                 // {   
                 //     transform.Rotate(0,180,0);
                 // }
-                projectileTarget = transform.position + (cam.transform.forward + camAimOffset) * 50000f;
+                projectileTarget = transform.position + (cam.transform.forward + camAimOffset) * (Vector3.Distance(p.transform.position, transform.position)+1);
                 p.transform.LookAt(projectileTarget);
             }
             // Debug.Log($"Proj dir: {p.travelDir}, Speed: {p.travelSpeed}");
